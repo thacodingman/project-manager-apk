@@ -41,7 +41,7 @@
 - Utilisateurs et permissions
 
 ### Phase 6: Gestion de projets ✅
-- Strapi CMS
+- ~~Strapi CMS~~ - ❌ **REMOVED** (too resource-intensive for mobile)
 - Templates Manager (11 catégories)
 - Deployments Manager
 - Backup/Restore projets
@@ -90,7 +90,7 @@
 
 ---
 
-## 🚀 Services disponibles (19)
+## 🚀 Services disponibles (18)
 
 1. Termux
 2. SSH Server/Client
@@ -100,7 +100,7 @@
 6. PHP-FPM
 7. PostgreSQL
 8. MySQL/MariaDB
-9. Strapi CMS
+9. ~~Strapi CMS~~ - ❌ **REMOVED** (too heavy)
 10. Templates Manager
 11. Deployments Manager
 12. DuckDNS

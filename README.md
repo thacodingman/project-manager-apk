@@ -10,7 +10,7 @@
 
 ## 🎯 About
 
-Project Manager is a comprehensive Android application designed to manage web development projects directly on your Android device using Termux. It provides a complete server management solution with support for Apache, Nginx, MySQL, PostgreSQL, PHP, Strapi CMS, and more.
+Project Manager is a comprehensive Android application designed to manage web development projects directly on your Android device using Termux. It provides a complete server management solution with support for Apache, Nginx, MySQL, PostgreSQL, PHP, and more - optimized for mobile devices.
 
 ---
 
@@ -22,7 +22,6 @@ Project Manager is a comprehensive Android application designed to manage web de
 - **PHP Manager** - Multiple PHP versions support
 - **MySQL Database** - Database and user management
 - **PostgreSQL** - Advanced PostgreSQL management
-- **Strapi CMS** - Headless CMS integration
 
 ### 🔐 Security & Networking
 - **SSH Manager** - SSH connections and key management
@@ -148,7 +147,6 @@ The release version is **unsigned** and will NOT install on Android. You must us
 - 🖥️ **Servers** - Apache, Nginx control
 - 🗄️ **Databases** - MySQL, PostgreSQL management
 - 🔧 **PHP** - PHP configuration
-- 📡 **Strapi** - CMS management
 - 🔐 **SSH Terminal** - SSH connections
 - 🌐 **DNS** - Dynamic DNS services
 - 🔒 **Security** - Firewall, SSL/TLS

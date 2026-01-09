@@ -16,7 +16,7 @@ Phase 2  ████████████ 100% ✅ Intégration Termux
 Phase 3  ████████████ 100% ✅ Serveurs Web (Apache + Nginx)
 Phase 4  ████████████ 100% ✅ Langages et Runtime (PHP)
 Phase 5  ████████████ 100% ✅ Bases de données (PostgreSQL + MySQL)
-Phase 6  ████████████ 100% ✅ Gestion de projets (Strapi + Templates + Deployments)
+Phase 6  ████████████ 100% ✅ Gestion de projets (Templates + Deployments)
 Phase 7  ████████████ 100% ✅ Terminal SSH
 Phase 8  ████████████ 100% ✅ Paramètres et Services DNS
 Phase 9  ████████████ 100% ✅ Sécurité et Permissions
@@ -76,14 +76,13 @@ TOTAL    ████████████ 100% ✅ PROJET TERMINÉ !
 7. ✅ **PostgreSQL** - Base de données relationnelle
 8. ✅ **MySQL/MariaDB** - Base de données relationnelle
 
-### CMS & Gestion de projets (3)
-9. ✅ **Strapi CMS** - CMS headless Node.js
-10. ✅ **Templates Manager** - Gestion templates réutilisables
-11. ✅ **Deployments Manager** - Déploiement automatique
+### Gestion de projets (2)
+9. ✅ **Templates Manager** - Gestion templates réutilisables
+10. ✅ **Deployments Manager** - Déploiement automatique
 
 ### Services DNS (3)
-12. ✅ **DuckDNS** - DNS dynamique gratuit
-13. ✅ **No-IP** - DNS dynamique
+11. ✅ **DuckDNS** - DNS dynamique gratuit
+12. ✅ **No-IP** - DNS dynamique
 14. ✅ **Porkbun API** - Gestion DNS avancée
 
 ### Fonctionnalités avancées (5)
@@ -111,7 +110,7 @@ Phase 2  :  ~800 lignes   (Termux)
 Phase 3  :  ~1200 lignes  (Apache + Nginx)
 Phase 4  :  ~900 lignes   (PHP)
 Phase 5  :  ~1500 lignes  (PostgreSQL + MySQL)
-Phase 6  :  ~2400 lignes  (Strapi + Templates + Deployments)
+Phase 6  :  ~2000 lignes  (Templates + Deployments)
 Phase 7  :  ~1150 lignes  (SSH Terminal)
 Phase 8  :  ~2560 lignes  (Settings + DNS + Proxy)
 Phase 9  :  ~770 lignes   (Sécurité)
@@ -137,8 +136,7 @@ TOTAL    :  ~13,580 lignes
 - Gestion utilisateurs et permissions
 - Association automatique aux projets
 
-### 3. CMS & Déploiement
-- **Strapi CMS** pour API headless
+### 3. Templates & Déploiement
 - **Templates** réutilisables (11 catégories)
 - **Déploiement en 1 clic** depuis templates
 - **Backup/Restore** automatique
@@ -192,11 +190,10 @@ TOTAL    :  ~13,580 lignes
 5. PHP (runtime)
 6. PostgreSQL (BDD)
 7. MySQL (BDD)
-8. Strapi (CMS)
-9. My Templates (modèles)
-10. Deployments (projets)
-11. SSH Terminal (connexions)
-12. Settings (configuration)
+8. My Templates (modèles)
+9. Deployments (projets)
+10. SSH Terminal (connexions)
+11. Settings (configuration)
 
 ---
 
@@ -259,8 +256,6 @@ TOTAL    :  ~13,580 lignes
 - **PHP 8.x** - Runtime
 - **PostgreSQL 15** - BDD
 - **MySQL 8** - BDD
-- **Node.js** - Runtime Strapi
-- **Strapi** - CMS
 - **OpenSSH** - SSH
 
 ### Services externes

@@ -15,19 +15,62 @@ data class CommandResult(
 
 class TermuxManager(private val context: Context) {
 
+    @Suppress("unused")
     private val termuxPath = "/data/data/com.termux/files"
-    private val homePath = "$termuxPath/home"
-    private val usrPath = "$termuxPath/usr"
 
     /**
-     * Verifie si Termux est installe
+     * Check if Termux is installed
+     * Supports multiple Termux variants: F-Droid, GitHub, Play Store
      */
+    @Suppress("unused")
     fun isTermuxInstalled(): Boolean {
+        val termuxPackages = listOf(
+            "com.termux",              // F-Droid/GitHub official
+            "com.termux.nightly",      // Nightly builds
+            "com.termux.dev"           // Development builds
+        )
+
+        return termuxPackages.any { packageName ->
+            try {
+                context.packageManager.getPackageInfo(packageName, 0)
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    /**
+     * Get installed Termux package name
+     */
+    fun getInstalledTermuxPackage(): String? {
+        val termuxPackages = listOf(
+            "com.termux",
+            "com.termux.nightly",
+            "com.termux.dev"
+        )
+
+        return termuxPackages.firstOrNull { packageName ->
+            try {
+                context.packageManager.getPackageInfo(packageName, 0)
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    /**
+     * Get Termux version
+     */
+    @Suppress("unused")
+    fun getTermuxVersion(): String? {
+        val packageName = getInstalledTermuxPackage() ?: return null
         return try {
-            val packageInfo = context.packageManager.getPackageInfo("com.termux", 0)
-            packageInfo != null
-        } catch (e: Exception) {
-            false
+            val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
+            packageInfo.versionName
+        } catch (_: Exception) {
+            null
         }
     }
 
@@ -79,28 +122,30 @@ class TermuxManager(private val context: Context) {
     }
 
     /**
-     * Verifie si un package est installe
+     * Check if a package is installed
      */
+    @Suppress("unused")
     suspend fun isPackageInstalled(packageName: String): CommandResult {
         return executePkgCommand("list-installed | grep $packageName")
     }
 
     /**
-     * Installe un package
+     * Install a package
      */
     suspend fun installPackage(packageName: String): CommandResult {
         return executePkgCommand("install -y $packageName")
     }
 
     /**
-     * Met a jour les packages
+     * Update packages
      */
+    @Suppress("unused")
     suspend fun updatePackages(): CommandResult {
         return executePkgCommand("update -y && pkg upgrade -y")
     }
 
     /**
-     * Scripts d'installation pour les services
+     * Installation scripts for services
      */
     suspend fun installApache(): CommandResult {
         return installPackage("apache2")
@@ -110,20 +155,23 @@ class TermuxManager(private val context: Context) {
         return installPackage("nginx")
     }
 
+    @Suppress("unused")
     suspend fun installPHP(): CommandResult {
         return installPackage("php")
     }
 
+    @Suppress("unused")
     suspend fun installPostgreSQL(): CommandResult {
         return installPackage("postgresql")
     }
 
+    @Suppress("unused")
     suspend fun installMySQL(): CommandResult {
         return installPackage("mariadb")
     }
 
     /**
-     * Demarrer/Arreter les services
+     * Start/Stop services
      */
     suspend fun startApache(): CommandResult {
         return executeCommand("apachectl start")
@@ -141,33 +189,40 @@ class TermuxManager(private val context: Context) {
         return executeCommand("nginx -s stop")
     }
 
+    @Suppress("unused")
     suspend fun startPostgreSQL(): CommandResult {
         return executeCommand("pg_ctl -D \$PREFIX/var/lib/postgresql start")
     }
 
+    @Suppress("unused")
     suspend fun stopPostgreSQL(): CommandResult {
         return executeCommand("pg_ctl -D \$PREFIX/var/lib/postgresql stop")
     }
 
+    @Suppress("unused")
     suspend fun startMySQL(): CommandResult {
         return executeCommand("mysqld_safe &")
     }
 
+    @Suppress("unused")
     suspend fun stopMySQL(): CommandResult {
         return executeCommand("mysqladmin shutdown")
     }
 
     /**
-     * Recupere les informations systeme
+     * Get system information
      */
+    @Suppress("unused")
     suspend fun getSystemInfo(): CommandResult {
         return executeCommand("uname -a")
     }
 
+    @Suppress("unused")
     suspend fun getDiskSpace(): CommandResult {
         return executeCommand("df -h")
     }
 
+    @Suppress("unused")
     suspend fun getMemoryInfo(): CommandResult {
         return executeCommand("free -h")
     }

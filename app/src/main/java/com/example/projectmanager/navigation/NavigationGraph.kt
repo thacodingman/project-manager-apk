@@ -16,7 +16,6 @@ import com.example.projectmanager.screens.SettingsScreen
 // Placeholder screens
 import com.example.projectmanager.screens.PostgreSQLScreen
 import com.example.projectmanager.screens.MySQLScreen
-import com.example.projectmanager.screens.StrapiScreen
 import com.example.projectmanager.screens.SSHTerminalScreen
 
 @Composable
@@ -45,9 +44,6 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable(Screen.MySQL.route) {
             MySQLScreen()
-        }
-        composable(Screen.Strapi.route) {
-            StrapiScreen()
         }
         composable(Screen.MyTemplates.route) {
             MyTemplatesScreen()

@@ -16,7 +16,6 @@ sealed class Screen(
     object PHP : Screen("php", "PHP", Icons.Default.Code)
     object PostgreSQL : Screen("postgresql", "PostgreSQL", Icons.Default.Storage)
     object MySQL : Screen("mysql", "MySQL", Icons.Default.DataObject)
-    object Strapi : Screen("strapi", "Strapi", Icons.Default.Layers)
     object MyTemplates : Screen("templates", "My Templates", Icons.Default.ContentCopy)
     object Deployments : Screen("deployments", "Deployments", Icons.Default.Rocket)
     object SSHTerminal : Screen("ssh", "SSH Terminal", Icons.Default.Computer)
@@ -32,7 +31,6 @@ val menuItems = listOf(
     Screen.PHP,
     Screen.PostgreSQL,
     Screen.MySQL,
-    Screen.Strapi,
     Screen.MyTemplates,
     Screen.Deployments,
     Screen.SSHTerminal,

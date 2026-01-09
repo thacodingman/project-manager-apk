@@ -44,7 +44,7 @@ Phase 2  ████████████ 100% ✅ Termux
 Phase 3  ████████████ 100% ✅ Apache + Nginx
 Phase 4  ████████████ 100% ✅ PHP
 Phase 5  ████████████ 100% ✅ PostgreSQL + MySQL
-Phase 6  ████████████ 100% ✅ Strapi + Templates + Deployments
+Phase 6  ████████████ 100% ✅ Templates + Deployments
 Phase 7  ████████████ 100% ✅ SSH Terminal
 Phase 8  ████████████ 100% ✅ Settings + DNS + Proxy
 Phase 9  ████████████ 100% ✅ Sécurité

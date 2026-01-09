@@ -2,7 +2,6 @@ package com.example.projectmanager.utils
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
@@ -10,14 +9,43 @@ import java.io.FileOutputStream
 class TermuxInstaller(private val context: Context) {
     
     /**
-     * Verifie si Termux est installe
+     * Check if Termux is installed
+     * Supports multiple Termux variants
      */
     fun isTermuxInstalled(): Boolean {
-        return try {
-            context.packageManager.getPackageInfo("com.termux", 0)
-            true
-        } catch (e: Exception) {
-            false
+        val termuxPackages = listOf(
+            "com.termux",
+            "com.termux.nightly",
+            "com.termux.dev"
+        )
+
+        return termuxPackages.any { packageName ->
+            try {
+                context.packageManager.getPackageInfo(packageName, 0)
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    /**
+     * Get installed Termux package name
+     */
+    private fun getInstalledTermuxPackage(): String? {
+        val termuxPackages = listOf(
+            "com.termux",
+            "com.termux.nightly",
+            "com.termux.dev"
+        )
+
+        return termuxPackages.firstOrNull { packageName ->
+            try {
+                context.packageManager.getPackageInfo(packageName, 0)
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
     }
     
@@ -28,7 +56,7 @@ class TermuxInstaller(private val context: Context) {
     fun isTermuxApkAvailable(): Boolean {
         return try {
             context.assets.list("apk")?.contains("termux.apk") ?: false
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -82,13 +110,14 @@ class TermuxInstaller(private val context: Context) {
     }
     
     /**
-     * Obtient la version de Termux installee
+     * Get Termux version
      */
     fun getTermuxVersion(): String? {
+        val packageName = getInstalledTermuxPackage() ?: return null
         return try {
-            val packageInfo = context.packageManager.getPackageInfo("com.termux", 0)
+            val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
             packageInfo.versionName
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
