@@ -6,9 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -92,7 +90,7 @@ fun TermuxScreen() {
         }
 
         Card(modifier = Modifier.fillMaxWidth().weight(1f), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))) {
-            LazyColumn(state = listState, modifier = Modifier.fillMaxSize().padding(12.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(12.dp)) {
                 items(commandHistory) { (command, output) ->
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -104,9 +102,6 @@ fun TermuxScreen() {
                         }
                     }
                 }
-            }
-            LaunchedEffect(commandHistory.size) {
-                if (commandHistory.isNotEmpty()) listState.animateScrollToItem(commandHistory.size - 1)
             }
         }
 
@@ -153,8 +148,6 @@ fun DashboardScreen() {
     val systemStats by monitoringManager.systemStats.collectAsState()
     var servicesStatus by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
     var backups by remember { mutableStateOf<List<BackupInfo>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -196,9 +189,7 @@ fun DashboardScreen() {
             }
         }
 
-        item {
-            Text("Backups recents", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        }
+        item { Text("Backups recents", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) }
 
         items(backups.take(3)) { backup: BackupInfo ->
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -269,7 +260,35 @@ fun DeploymentsScreen() {
 }
 
 @Composable
-private fun StatCard(label: String, value: String, progress: Float, modifier: Modifier = Modifier) {
+fun SSHTerminalScreen() {
+    val context = LocalContext.current
+    val sshManager = remember { SSHManager(context) }
+    val scope = rememberCoroutineScope()
+    var commandInput by remember { mutableStateOf("") }
+    var terminalOutput by remember { mutableStateOf("") }
+    
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("SSH Terminal", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Card(modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp), colors = CardDefaults.cardColors(containerColor = Color.Black)) {
+            LazyColumn(modifier = Modifier.padding(8.dp)) {
+                item { Text(terminalOutput, color = Color.Green, fontFamily = FontFamily.Monospace) }
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(value = commandInput, onValueChange = { commandInput = it }, modifier = Modifier.weight(1f), placeholder = { Text("Commande SSH...") })
+            IconButton(onClick = {
+                scope.launch {
+                    val conn = SSHConnection("localhost", 22, "user", "pass")
+                    val result = sshManager.executeSSHCommand(conn, commandInput)
+                    terminalOutput += "\n$ ${commandInput}\n${result.output}${result.error}"
+                    commandInput = ""
+                }
+            }) { Icon(Icons.Default.Send, null) }
+        }
+    }
+}
+
+@Composable private fun StatCard(label: String, value: String, progress: Float, modifier: Modifier = Modifier) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(label, style = MaterialTheme.typography.labelMedium)
@@ -279,8 +298,7 @@ private fun StatCard(label: String, value: String, progress: Float, modifier: Mo
     }
 }
 
-@Composable
-private fun PermissionsSection(onRequestPermissions: () -> Unit, onRequestStoragePermission: () -> Unit) {
+@Composable private fun PermissionsSection(onRequestPermissions: () -> Unit, onRequestStoragePermission: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Icon(Icons.Default.Security, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
         Text("Permissions requises", style = MaterialTheme.typography.headlineMedium)
@@ -290,8 +308,7 @@ private fun PermissionsSection(onRequestPermissions: () -> Unit, onRequestStorag
     }
 }
 
-@Composable
-private fun TermuxInstallSection() {
+@Composable private fun TermuxInstallSection() {
     val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Icon(Icons.Default.Android, null, modifier = Modifier.size(64.dp))
@@ -300,8 +317,7 @@ private fun TermuxInstallSection() {
     }
 }
 
-@Composable
-private fun QuickCommandsSection(onCommandSelected: (String) -> Unit, onDismiss: () -> Unit) {
+@Composable private fun QuickCommandsSection(onCommandSelected: (String) -> Unit, onDismiss: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -316,11 +332,9 @@ private fun QuickCommandsSection(onCommandSelected: (String) -> Unit, onDismiss:
     }
 }
 
-// Autres ecrans simplifiés pour la navigation
 @Composable fun ApacheScreen() { Box(Modifier.fillMaxSize()) { Text("Apache Screen") } }
 @Composable fun NginxScreen() { Box(Modifier.fillMaxSize()) { Text("Nginx Screen") } }
 @Composable fun PHPScreen() { Box(Modifier.fillMaxSize()) { Text("PHP Screen") } }
 @Composable fun PostgreSQLScreen() { Box(Modifier.fillMaxSize()) { Text("PostgreSQL Screen") } }
 @Composable fun MySQLScreen() { Box(Modifier.fillMaxSize()) { Text("MySQL Screen") } }
 @Composable fun StrapiScreen() { Box(Modifier.fillMaxSize()) { Text("Strapi Screen") } }
-@Composable fun SSHTerminalScreen() { Box(Modifier.fillMaxSize()) { Text("SSH Terminal Screen") } }
