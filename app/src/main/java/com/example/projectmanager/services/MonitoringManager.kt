@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.services
+package com.example.projectmanager.services
 
 import android.content.Context
 import com.example.projectmanager.termux.CommandResult

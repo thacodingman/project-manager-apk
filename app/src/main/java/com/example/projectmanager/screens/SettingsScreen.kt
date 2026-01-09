@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.screens
+package com.example.projectmanager.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

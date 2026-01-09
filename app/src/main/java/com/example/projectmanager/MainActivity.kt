@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager
+package com.example.projectmanager
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

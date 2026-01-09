@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.utils
+package com.example.projectmanager.utils
 
 import android.content.Context
 import android.content.Intent

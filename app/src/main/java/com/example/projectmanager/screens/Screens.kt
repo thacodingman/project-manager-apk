@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -131,7 +132,7 @@ fun TermuxScreen() {
                 enabled = commandInput.isNotBlank() && !isExecuting
             ) {
                 if (isExecuting) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                else Icon(Icons.Filled.Send, null)
+                else Icon(Icons.AutoMirrored.Filled.Send, null)
             }
         }
     }
@@ -282,7 +283,7 @@ fun SSHTerminalScreen() {
                     terminalOutput += "\n$ ${commandInput}\n${result.output}${result.error}"
                     commandInput = ""
                 }
-            }) { Icon(Icons.Filled.Send, null) }
+            }) { Icon(Icons.AutoMirrored.Filled.Send, null) }
         }
     }
 }

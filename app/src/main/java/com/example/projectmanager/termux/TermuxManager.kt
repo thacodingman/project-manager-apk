@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.termux
+package com.example.projectmanager.termux
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
