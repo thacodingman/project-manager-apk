@@ -89,10 +89,23 @@ data class StorageInfo(val total: String, val used: String, val available: Strin
  */
 data class Template(
     val name: String,
-    val description: String,
+    val path: String,
     val category: String,
-    val sourcePath: String,
+    val description: String,
+    val version: String = "1.0",
+    val author: String = "",
+    val createdDate: Long = System.currentTimeMillis(),
+    val sourcePath: String = path,
     val createdAt: String = ""
+)
+
+/**
+ * Details supplementaires d'un template
+ */
+data class TemplateDetails(
+    val fileCount: Int,
+    val size: String,
+    val technologies: List<String>
 )
 
 data class Deployment(

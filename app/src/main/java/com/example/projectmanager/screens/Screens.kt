@@ -24,6 +24,7 @@ import com.example.projectmanager.termux.TermuxManager
 import com.example.projectmanager.services.*
 import com.example.projectmanager.models.*
 import com.example.projectmanager.utils.PermissionsHelper
+import com.example.projectmanager.utils.TermuxInstaller
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +131,7 @@ fun TermuxScreen() {
                 enabled = commandInput.isNotBlank() && !isExecuting
             ) {
                 if (isExecuting) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                else Icon(Icons.Default.Send, null)
+                else Icon(Icons.Filled.Send, null)
             }
         }
     }
@@ -276,12 +277,12 @@ fun SSHTerminalScreen() {
             OutlinedTextField(value = commandInput, onValueChange = { commandInput = it }, modifier = Modifier.weight(1f), placeholder = { Text("Commande SSH...") })
             IconButton(onClick = {
                 scope.launch {
-                    val conn = SSHConnection("localhost", 22, "user", "pass")
+                    val conn = SSHConnection("SSH Terminal", "localhost", 22, "user")
                     val result = sshManager.executeSSHCommand(conn, commandInput)
                     terminalOutput += "\n$ ${commandInput}\n${result.output}${result.error}"
                     commandInput = ""
                 }
-            }) { Icon(Icons.Default.Send, null) }
+            }) { Icon(Icons.Filled.Send, null) }
         }
     }
 }
@@ -291,7 +292,7 @@ fun SSHTerminalScreen() {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(label, style = MaterialTheme.typography.labelMedium)
             Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
+            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
         }
     }
 }
@@ -311,7 +312,12 @@ fun SSHTerminalScreen() {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Icon(Icons.Default.Android, null, modifier = Modifier.size(64.dp))
         Text("Termux non installe", style = MaterialTheme.typography.headlineMedium)
-        Button(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/packages/com.termux/"))) }) { Text("Telecharger Termux") }
+        Button(onClick = {
+            val installer = TermuxInstaller(context)
+            installer.installTermux()
+        }) {
+            Text("Installer Termux")
+        }
     }
 }
 

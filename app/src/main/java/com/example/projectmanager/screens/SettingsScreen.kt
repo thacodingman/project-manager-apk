@@ -120,7 +120,7 @@ private fun DuckDNSTab(config: DuckDNSConfig, logs: List<DNSUpdateLog>, onSave: 
 }
 
 @Composable
-private fun NoIPTab(config: NoIPConfig, logs: List<DNSUpdateLog>, onSave: (String, String, List<String>) -> Unit, onUpdate: () -> Unit, isLoading: Boolean, statusMessage: String) {
+private fun NoIPTab(config: NoIPConfig, logs: List<DNSUpdateLog>, onSave: (String, String, String) -> Unit, onUpdate: () -> Unit, isLoading: Boolean, statusMessage: String) {
     var user by remember { mutableStateOf(config.username) }
     var pass by remember { mutableStateOf(config.password) }
     var host by remember { mutableStateOf(config.hostname) }
@@ -129,7 +129,7 @@ private fun NoIPTab(config: NoIPConfig, logs: List<DNSUpdateLog>, onSave: (Strin
         OutlinedTextField(value = user, onValueChange = { user = it }, label = { Text("Username") }, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(value = pass, onValueChange = { pass = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(value = host, onValueChange = { host = it }, label = { Text("Hostname") }, modifier = Modifier.fillMaxWidth())
-        Button(onClick = { onSave(user, pass, listOf(host)) }, modifier = Modifier.fillMaxWidth()) { Text("Sauvegarder") }
+        Button(onClick = { onSave(user, pass, host) }, modifier = Modifier.fillMaxWidth()) { Text("Sauvegarder") }
         Button(onClick = onUpdate, modifier = Modifier.fillMaxWidth()) { Text("Mettre a jour IP") }
     }
 }

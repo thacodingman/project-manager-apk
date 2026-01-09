@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.services
+package com.example.projectmanager.services
 
 import android.content.Context
 import android.util.Base64
@@ -68,7 +68,7 @@ EOF
     suspend fun updateIP(): CommandResult {
         val cfg = _config.value
         if (cfg.username.isBlank() || cfg.password.isBlank() || cfg.hostname.isBlank()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val auth = Base64.encodeToString("${cfg.username}:${cfg.password}".toByteArray(), Base64.NO_WRAP)

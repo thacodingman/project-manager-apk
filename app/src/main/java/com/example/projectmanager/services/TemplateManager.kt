@@ -1,6 +1,8 @@
-﻿package com.example.projectmanager.services
+package com.example.projectmanager.services
 
 import android.content.Context
+import com.example.projectmanager.models.Template
+import com.example.projectmanager.models.TemplateDetails
 import com.example.projectmanager.termux.CommandResult
 import com.example.projectmanager.termux.TermuxManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -227,25 +229,4 @@ EOF
     }
 }
 
-/**
- * Classe pour representer un template
- */
-data class Template(
-    val name: String,
-    val path: String,
-    val category: String,
-    val description: String,
-    val version: String,
-    val author: String,
-    val createdDate: Long
-)
-
-/**
- * Details supplementaires d'un template
- */
-data class TemplateDetails(
-    val fileCount: Int,
-    val size: String,
-    val technologies: List<String>
-)
 

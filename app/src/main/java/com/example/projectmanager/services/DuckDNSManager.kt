@@ -1,6 +1,7 @@
-﻿package com.example.projectmanager.services
+package com.example.projectmanager.services
 
 import android.content.Context
+import com.example.projectmanager.models.DNSUpdateLog
 import com.example.projectmanager.termux.CommandResult
 import com.example.projectmanager.termux.TermuxManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,7 +65,7 @@ EOF
     suspend fun updateIP(): CommandResult {
         val cfg = _config.value
         if (cfg.token.isBlank() || cfg.domains.isEmpty()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val domainsParam = cfg.domains.joinToString(",")
@@ -86,7 +87,7 @@ EOF
     suspend fun setupAutoUpdate(intervalMinutes: Int = 5): CommandResult {
         val cfg = _config.value
         if (cfg.token.isBlank() || cfg.domains.isEmpty()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val domainsParam = cfg.domains.joinToString(",")
@@ -175,13 +176,3 @@ data class DuckDNSConfig(
     val domains: List<String>
 )
 
-/**
- * Log de mise a jour DNS
- */
-data class DNSUpdateLog(
-    val service: String,
-    val domain: String,
-    val success: Boolean,
-    val message: String,
-    val timestamp: Long
-)

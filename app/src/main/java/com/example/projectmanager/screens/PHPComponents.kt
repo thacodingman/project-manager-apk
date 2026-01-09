@@ -104,7 +104,7 @@ fun PHPConfigTab(
         Text("Configuration PHP", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
         Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = padding(16.dp)) { // Should be Modifier.padding
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text("Fichier de configuration", fontWeight = FontWeight.Bold)
                 Text(configPath, style = MaterialTheme.typography.bodySmall)
             }
@@ -154,7 +154,7 @@ fun PHPConfigTab(
         }
 
         if (isLoading) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            LinearProgressIndicator(progress = { 1f }, modifier = Modifier.fillMaxWidth())
         }
     }
 }

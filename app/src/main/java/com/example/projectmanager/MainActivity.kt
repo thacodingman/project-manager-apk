@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -45,7 +47,7 @@ fun ProjectManagerApp() {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                modifier = Modifier.width(280.dp)
+                modifier = Modifier.width(280.dp).verticalScroll(rememberScrollState())
             ) {
                 Spacer(Modifier.height(16.dp))
                 Text(
@@ -113,4 +115,3 @@ fun ProjectManagerApp() {
         }
     }
 }
-

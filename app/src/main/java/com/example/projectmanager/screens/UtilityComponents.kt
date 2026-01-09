@@ -229,7 +229,7 @@ fun ServiceControlTab(
         }
         
         if (isLoading) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            LinearProgressIndicator(progress = { 1f }, modifier = Modifier.fillMaxWidth())
         }
     }
 }

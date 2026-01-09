@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.services
+package com.example.projectmanager.services
 
 import android.content.Context
 import com.example.projectmanager.models.*
@@ -118,7 +118,7 @@ class DeploymentManager(private val context: Context) {
 
     suspend fun stopDeployment(projectName: String, webServer: String): CommandResult {
         updateDeploymentStatus(projectName, "stopped")
-        return CommandResult(true, "Arrete", "", 0)
+        return CommandResult(0, "Arrete", "")
     }
 
     suspend fun deleteDeployment(projectName: String): CommandResult {

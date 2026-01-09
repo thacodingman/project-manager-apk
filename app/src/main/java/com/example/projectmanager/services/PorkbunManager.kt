@@ -1,4 +1,4 @@
-﻿package com.example.projectmanager.services
+package com.example.projectmanager.services
 
 import android.content.Context
 import com.example.projectmanager.models.*
@@ -68,7 +68,7 @@ EOF
     suspend fun listDomains(): CommandResult {
         val cfg = _config.value
         if (cfg.apiKey.isBlank() || cfg.secretKey.isBlank()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val payload = """{"apikey":"${cfg.apiKey}","secretapikey":"${cfg.secretKey}"}"""
@@ -92,7 +92,7 @@ EOF
     suspend fun updateDNSRecord(domain: String, subdomain: String = "", ip: String = ""): CommandResult {
         val cfg = _config.value
         if (cfg.apiKey.isBlank() || cfg.secretKey.isBlank()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val ipAddress = if (ip.isBlank()) {
@@ -133,7 +133,7 @@ EOF
     suspend fun getDNSRecords(domain: String): CommandResult {
         val cfg = _config.value
         if (cfg.apiKey.isBlank() || cfg.secretKey.isBlank()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val payload = """{"apikey":"${cfg.apiKey}","secretapikey":"${cfg.secretKey}"}"""
@@ -151,7 +151,7 @@ EOF
     suspend fun deleteDNSRecord(domain: String, recordId: String): CommandResult {
         val cfg = _config.value
         if (cfg.apiKey.isBlank() || cfg.secretKey.isBlank()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val payload = """{"apikey":"${cfg.apiKey}","secretapikey":"${cfg.secretKey}"}"""
@@ -169,7 +169,7 @@ EOF
     suspend fun setupAutoUpdate(domain: String, intervalMinutes: Int = 60): CommandResult {
         val cfg = _config.value
         if (cfg.apiKey.isBlank() || cfg.secretKey.isBlank()) {
-            return CommandResult(false, "", "Configuration incomplete", 1)
+            return CommandResult(1, "", "Configuration incomplete")
         }
 
         val cronScript = """
