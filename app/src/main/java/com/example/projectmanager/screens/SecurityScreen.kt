@@ -31,102 +31,721 @@ fun SecurityScreen() {
     var firewallRules by remember { mutableStateOf("") }
     var securityLogs by remember { mutableStateOf("") }
 
+    // Verifier iptables au lancement
     LaunchedEffect(Unit) {
         val result = securityManager.checkFirewallAvailable()
         firewallInstalled = result.success && result.output.isNotBlank()
+
         if (firewallInstalled) {
-            firewallRules = securityManager.listFirewallRules().output
-            securityLogs = securityManager.getSecurityLogs().output
+            val rulesResult = securityManager.listFirewallRules()
+            firewallRules = rulesResult.output
+
+            val logsResult = securityManager.getSecurityLogs()
+            securityLogs = logsResult.output
         }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // En-tete
         Card(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
         ) {
-            Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Column {
-                    Text("Securite", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    Text("Gestion de la securite et firewall", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Securite",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Gestion de la securite et firewall",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
-                Icon(Icons.Default.Security, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Default.Security,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Tabs
         ScrollableTabRow(selectedTabIndex = selectedTab) {
-            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Chiffrement") }, icon = { Icon(Icons.Default.Lock, null) })
-            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("Firewall") }, icon = { Icon(Icons.Default.Shield, null) })
-            Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("Mots de passe") }, icon = { Icon(Icons.Default.Key, null) })
-            Tab(selected = selectedTab == 3, onClick = { selectedTab = 3 }, text = { Text("Logs") }, icon = { Icon(Icons.Default.Description, null) })
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = { Text("Chiffrement") },
+                icon = { Icon(Icons.Default.Lock, null) }
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = { Text("Firewall") },
+                icon = { Icon(Icons.Default.Shield, null) }
+            )
+            Tab(
+                selected = selectedTab == 2,
+                onClick = { selectedTab = 2 },
+                text = { Text("Mots de passe") },
+                icon = { Icon(Icons.Default.Key, null) }
+            )
+            Tab(
+                selected = selectedTab == 3,
+                onClick = { selectedTab = 3 },
+                text = { Text("Logs") },
+                icon = { Icon(Icons.Default.Description, null) }
+            )
         }
 
+        // Contenu
         when (selectedTab) {
-            0 -> EncryptionTab(securityManager, statusMessage) { statusMessage = it }
-            1 -> FirewallTab(securityManager, firewallInstalled, firewallRules, { scope.launch { securityManager.installFirewall(); firewallInstalled = true } }, { scope.launch { firewallRules = securityManager.listFirewallRules().output } }, { p -> scope.launch { securityManager.blockPort(p) } }, { i -> scope.launch { securityManager.blockIP(i) } }, isLoading, statusMessage)
-            2 -> PasswordTab(securityManager, statusMessage) { statusMessage = it }
-            3 -> SecurityLogsTab(securityLogs, { scope.launch { securityLogs = securityManager.getSecurityLogs().output } }, { scope.launch { securityManager.clearSecurityLogs(); securityLogs = "" } })
+            0 -> EncryptionTab(
+                securityManager = securityManager,
+                statusMessage = statusMessage,
+                onStatusChange = { statusMessage = it }
+            )
+            1 -> FirewallTab(
+                securityManager = securityManager,
+                isInstalled = firewallInstalled,
+                rules = firewallRules,
+                onInstall = {
+                    scope.launch {
+                        isLoading = true
+                        val result = securityManager.installFirewall()
+                        statusMessage = if (result.success) {
+                            firewallInstalled = true
+                            "Firewall installe"
+                        } else {
+                            "Erreur: ${result.error}"
+                        }
+                        isLoading = false
+                    }
+                },
+                onRefreshRules = {
+                    scope.launch {
+                        val result = securityManager.listFirewallRules()
+                        firewallRules = result.output
+                    }
+                },
+                onBlockPort = { port ->
+                    scope.launch {
+                        isLoading = true
+                        val result = securityManager.blockPort(port)
+                        statusMessage = if (result.output.contains("Permissions root")) {
+                            "⚠️ Permissions root requises pour iptables"
+                        } else {
+                            "Port $port bloque"
+                        }
+                        securityManager.logSecurityEvent("Port $port bloque", "INFO")
+                        isLoading = false
+                    }
+                },
+                onBlockIP = { ip ->
+                    scope.launch {
+                        isLoading = true
+                        val result = securityManager.blockIP(ip)
+                        statusMessage = if (result.output.contains("Permissions root")) {
+                            "⚠️ Permissions root requises pour iptables"
+                        } else {
+                            "IP $ip bloquee"
+                        }
+                        securityManager.logSecurityEvent("IP $ip bloquee", "WARNING")
+                        isLoading = false
+                    }
+                },
+                isLoading = isLoading,
+                statusMessage = statusMessage
+            )
+            2 -> PasswordTab(
+                securityManager = securityManager,
+                statusMessage = statusMessage,
+                onStatusChange = { statusMessage = it }
+            )
+            3 -> SecurityLogsTab(
+                logs = securityLogs,
+                onRefresh = {
+                    scope.launch {
+                        val result = securityManager.getSecurityLogs()
+                        securityLogs = result.output
+                    }
+                },
+                onClear = {
+                    scope.launch {
+                        securityManager.clearSecurityLogs()
+                        securityLogs = ""
+                        statusMessage = "Logs effaces"
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-private fun EncryptionTab(securityManager: SecurityManager, statusMessage: String, onStatusChange: (String) -> Unit) {
-    var text by remember { mutableStateOf("") }
-    var key by remember { mutableStateOf("") }
-    var result by remember { mutableStateOf("") }
+private fun EncryptionTab(
+    securityManager: SecurityManager,
+    statusMessage: String,
+    onStatusChange: (String) -> Unit
+) {
+    var textToEncrypt by remember { mutableStateOf("") }
+    var encryptionKey by remember { mutableStateOf("") }
+    var encryptedText by remember { mutableStateOf("") }
+    var textToDecrypt by remember { mutableStateOf("") }
+    var decryptedText by remember { mutableStateOf("") }
 
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         item {
-            OutlinedTextField(value = text, onValueChange = { text = it }, label = { Text("Texte") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = key, onValueChange = { key = it }, label = { Text("Cle") }, modifier = Modifier.fillMaxWidth())
-            Button(onClick = { result = securityManager.encryptString(text, key); onStatusChange("Chiffre") }, modifier = Modifier.fillMaxWidth()) { Text("Chiffrer") }
-            if (result.isNotBlank()) Text("Resultat: $result", style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.Info, null)
+                        Text("Chiffrement AES-256", fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Chiffrez et dechiffrez vos donnees sensibles avec AES",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+
+        item {
+            Text("Chiffrer du texte", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        }
+
+        item {
+            OutlinedTextField(
+                value = textToEncrypt,
+                onValueChange = { textToEncrypt = it },
+                label = { Text("Texte a chiffrer") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+        }
+
+        item {
+            OutlinedTextField(
+                value = encryptionKey,
+                onValueChange = { encryptionKey = it },
+                label = { Text("Cle de chiffrement") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        item {
+            Button(
+                onClick = {
+                    if (textToEncrypt.isNotBlank() && encryptionKey.isNotBlank()) {
+                        encryptedText = securityManager.encryptString(textToEncrypt, encryptionKey)
+                        onStatusChange("Texte chiffre avec succes")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = textToEncrypt.isNotBlank() && encryptionKey.isNotBlank()
+            ) {
+                Icon(Icons.Default.Lock, null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Chiffrer")
+            }
+        }
+
+        if (encryptedText.isNotBlank()) {
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Resultat chiffre:", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            encryptedText,
+                            fontFamily = FontFamily.Monospace,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            HorizontalDivider()
+        }
+
+        item {
+            Text("Dechiffrer du texte", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        }
+
+        item {
+            OutlinedTextField(
+                value = textToDecrypt,
+                onValueChange = { textToDecrypt = it },
+                label = { Text("Texte chiffre") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+        }
+
+        item {
+            Button(
+                onClick = {
+                    if (textToDecrypt.isNotBlank() && encryptionKey.isNotBlank()) {
+                        decryptedText = securityManager.decryptString(textToDecrypt, encryptionKey)
+                        onStatusChange(if (decryptedText.isNotBlank()) "Texte dechiffre" else "Erreur de dechiffrement")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = textToDecrypt.isNotBlank() && encryptionKey.isNotBlank()
+            ) {
+                Icon(Icons.Default.LockOpen, null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Dechiffrer")
+            }
+        }
+
+        if (decryptedText.isNotBlank()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Resultat dechiffre:", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(decryptedText, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+
+        if (statusMessage.isNotBlank()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (statusMessage.contains("Erreur"))
+                            MaterialTheme.colorScheme.errorContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Text(
+                        statusMessage,
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun FirewallTab(securityManager: SecurityManager, isInstalled: Boolean, rules: String, onInstall: () -> Unit, onRefresh: () -> Unit, onBlockPort: (Int) -> Unit, onBlockIP: (String) -> Unit, isLoading: Boolean, statusMessage: String) {
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun FirewallTab(
+    securityManager: SecurityManager,
+    isInstalled: Boolean,
+    rules: String,
+    onInstall: () -> Unit,
+    onRefreshRules: () -> Unit,
+    onBlockPort: (Int) -> Unit,
+    onBlockIP: (String) -> Unit,
+    isLoading: Boolean,
+    statusMessage: String
+) {
+    var portToBlock by remember { mutableStateOf("") }
+    var ipToBlock by remember { mutableStateOf("") }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         if (!isInstalled) {
-            item { Button(onClick = onInstall) { Text("Installer iptables") } }
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            Icons.Default.Shield,
+                            null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Firewall non installe", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Installez iptables pour gerer le firewall")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = onInstall, enabled = !isLoading) {
+                            Text("Installer iptables")
+                        }
+                    }
+                }
+            }
         } else {
             item {
-                Text("Regles actives", fontWeight = FontWeight.Bold)
-                Card(modifier = Modifier.fillMaxWidth()) { Text(rules.ifBlank { "Aucune regle" }, modifier = Modifier.padding(8.dp), fontFamily = FontFamily.Monospace, fontSize = 10.sp) }
-                Button(onClick = onRefresh, modifier = Modifier.fillMaxWidth()) { Text("Actualiser") }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(Icons.Default.Warning, null)
+                            Text("Attention", fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "⚠️ Les regles iptables necessitent des permissions root sur Android. Fonctionnalites limitees sans root.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+
+            item {
+                Text("Bloquer un port", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = portToBlock,
+                        onValueChange = { portToBlock = it },
+                        label = { Text("Port") },
+                        placeholder = { Text("8080") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Button(
+                        onClick = {
+                            portToBlock.toIntOrNull()?.let { onBlockPort(it) }
+                        },
+                        enabled = !isLoading && portToBlock.toIntOrNull() != null
+                    ) {
+                        Icon(Icons.Default.Block, null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Bloquer")
+                    }
+                }
+            }
+
+            item {
+                Text("Bloquer une IP", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = ipToBlock,
+                        onValueChange = { ipToBlock = it },
+                        label = { Text("Adresse IP") },
+                        placeholder = { Text("192.168.1.100") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Button(
+                        onClick = { onBlockIP(ipToBlock) },
+                        enabled = !isLoading && ipToBlock.isNotBlank()
+                    ) {
+                        Icon(Icons.Default.Block, null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Bloquer")
+                    }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Regles actives", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onRefreshRules) {
+                        Icon(Icons.Default.Refresh, "Actualiser")
+                    }
+                }
+            }
+
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            rules.ifBlank { "Aucune regle" },
+                            fontFamily = FontFamily.Monospace,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        }
+
+        if (statusMessage.isNotBlank()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (statusMessage.contains("Erreur") || statusMessage.contains("⚠️"))
+                            MaterialTheme.colorScheme.errorContainer
+                        else
+                            MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Text(
+                        statusMessage,
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+
+        if (isLoading) {
+            item {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
         }
     }
 }
 
 @Composable
-private fun PasswordTab(securityManager: SecurityManager, statusMessage: String, onStatusChange: (String) -> Unit) {
-    var pass by remember { mutableStateOf("") }
-    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Button(onClick = { pass = securityManager.generateSecurePassword(16); onStatusChange("Genere") }, modifier = Modifier.fillMaxWidth()) { Text("Generer mot de passe") }
-        if (pass.isNotBlank()) SelectionContainer { Text(pass, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace) }
-    }
-}
+private fun PasswordTab(
+    securityManager: SecurityManager,
+    statusMessage: String,
+    onStatusChange: (String) -> Unit
+) {
+    var generatedPassword by remember { mutableStateOf("") }
+    var passwordToCheck by remember { mutableStateOf("") }
+    var passwordStrength by remember { mutableStateOf<PasswordStrength?>(null) }
 
-@Composable
-private fun SecurityLogsTab(logs: String, onRefresh: () -> Unit, onClear: () -> Unit) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Logs", fontWeight = FontWeight.Bold)
-            Row {
-                IconButton(onClick = onRefresh) { Icon(Icons.Default.Refresh, null) }
-                IconButton(onClick = onClear) { Icon(Icons.Default.Delete, null) }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.Key, null)
+                        Text("Gestion des mots de passe", fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Generez des mots de passe securises et verifiez leur force",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         }
-        Card(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            LazyColumn(modifier = Modifier.padding(8.dp)) { item { Text(logs.ifBlank { "Vide" }, fontSize = 10.sp, fontFamily = FontFamily.Monospace) } }
+
+        item {
+            Text("Generer un mot de passe", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        }
+
+        item {
+            Button(
+                onClick = {
+                    generatedPassword = securityManager.generateSecurePassword(16)
+                    onStatusChange("Mot de passe genere")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Autorenew, null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Generer mot de passe securise")
+            }
+        }
+
+        if (generatedPassword.isNotBlank()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Mot de passe genere:", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            generatedPassword,
+                            fontFamily = FontFamily.Monospace,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color(0xFF4CAF50)
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            HorizontalDivider()
+        }
+
+        item {
+            Text("Verifier la force", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        }
+
+        item {
+            OutlinedTextField(
+                value = passwordToCheck,
+                onValueChange = {
+                    passwordToCheck = it
+                    passwordStrength = if (it.isNotBlank()) {
+                        securityManager.checkPasswordStrength(it)
+                    } else null
+                },
+                label = { Text("Mot de passe a verifier") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        passwordStrength?.let { strength ->
+            item {
+                val (color, text) = when (strength) {
+                    PasswordStrength.WEAK -> Color(0xFFF44336) to "Faible ⚠️"
+                    PasswordStrength.MEDIUM -> Color(0xFFFF9800) to "Moyen"
+                    PasswordStrength.STRONG -> Color(0xFF4CAF50) to "Fort ✓"
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = color.copy(alpha = 0.2f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            if (strength == PasswordStrength.STRONG)
+                                Icons.Default.CheckCircle
+                            else
+                                Icons.Default.Warning,
+                            null,
+                            tint = color
+                        )
+                        Text(
+                            "Force: $text",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = color
+                        )
+                    }
+                }
+            }
+        }
+
+        if (statusMessage.isNotBlank()) {
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        statusMessage,
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun SelectionContainer(content: @Composable () -> Unit) {
-    Box { content() }
+private fun SecurityLogsTab(
+    logs: String,
+    onRefresh: () -> Unit,
+    onClear: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Logs de securite", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(onClick = onRefresh) {
+                    Icon(Icons.Default.Refresh, "Actualiser")
+                }
+                IconButton(onClick = onClear) {
+                    Icon(Icons.Default.Delete, "Effacer", tint = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            LazyColumn(modifier = Modifier.padding(16.dp)) {
+                item {
+                    Text(
+                        logs.ifBlank { "Aucun log de securite" },
+                        fontFamily = FontFamily.Monospace,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+    }
 }
