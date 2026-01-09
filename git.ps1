@@ -7,7 +7,7 @@ function Show-Menu {
     Write-Host "1. Voir le statut (git status)"
     Write-Host "2. TOUT SAUVEGARDER (Add + Commit + Sync)"
     Write-Host "3. Forcer la branche 'main' et lier l'URL origin"
-    Write-Host "4. Récupérer les changements (Pull Rebase)"
+    Write-Host "4. Recuperer les changements (Pull Rebase)"
     Write-Host "5. Envoyer vers GitHub (Push)"
     Write-Host "Q. Quitter"
     Write-Host "==============================================" -ForegroundColor Cyan
@@ -24,7 +24,7 @@ do {
         }
         '2' {
             $msg = Read-Host "Message de commit (ex: correction bug)"
-            if ([string]::IsNullOrWhiteSpace($msg)) { $msg = "Mise à jour automatique" }
+            if ([string]::IsNullOrWhiteSpace($msg)) { $msg = "Mise a jour automatique" }
             
             Write-Host "Ajout des fichiers..." -ForegroundColor Yellow
             git add .
@@ -38,7 +38,7 @@ do {
             Write-Host "Envoi vers GitHub (Push)..." -ForegroundColor Yellow
             git push origin main
             
-            Write-Host "Terminé !" -ForegroundColor Green
+            Write-Host "Termine !" -ForegroundColor Green
             Pause
         }
         '3' {
