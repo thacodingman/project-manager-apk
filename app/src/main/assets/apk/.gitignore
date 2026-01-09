@@ -1,0 +1,8 @@
+# Ignorer l'APK Termux (trop volumineux pour git)
+termux.apk
+*.apk
+
+# Garder le README pour les instructions
+!README.md
+!.gitkeep
+

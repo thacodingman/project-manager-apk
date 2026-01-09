@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cache directory pour les APK temporaires -->
+    <cache-path name="apk_cache" path="." />
+
+    <!-- Assets pour les fichiers inclus -->
+    <files-path name="apk_files" path="." />
+
+    <!-- External storage si nécessaire -->
+    <external-path name="external_files" path="." />
+</paths>
+
