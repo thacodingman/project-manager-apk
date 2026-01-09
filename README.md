@@ -53,27 +53,41 @@ Project Manager is a comprehensive Android application designed to manage web de
 
 Due to GitHub's file size limitations (100 MB), the APK files are not stored in this repository.
 
-**To get the APK:**
+**⚠️ IMPORTANT: Use the DEBUG version for installation!**
 
-1. **Build from source** (recommended):
+The release version is **unsigned** and will NOT install on Android. You must use the debug version or sign the release version yourself.
+
+**To get the installable APK:**
+
+1. **Build DEBUG version** (RECOMMENDED - Ready to install):
    ```bash
    git clone https://github.com/thacodingman/project-manager-apk.git
    cd project-manager-apk
+   ./gradlew assembleDebug
+   ```
+   **Installable APK**: `app/build/outputs/apk/debug/ProjectManager-v1.0-debug.apk` ✅
+
+2. **Build RELEASE version** (Requires signing):
+   ```bash
    ./gradlew assembleRelease
    ```
-   APK will be at: `app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk`
-
-2. **Alternative**: Check the [Releases](https://github.com/thacodingman/project-manager-apk/releases) page for external download links
+   **Non-installable APK**: `app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk` ❌
+   
+   To make it installable, you need to sign it first (see [Signing Instructions](#signing-the-release-apk) below)
 
 #### 📦 APK Versions
 
-- **Debug**: `ProjectManager-v1.0-debug.apk` (124 MB)
+- **✅ Debug**: `ProjectManager-v1.0-debug.apk` (124 MB)
+  - **READY TO INSTALL** - Auto-signed for testing
   - For development and testing
   - Includes debugging tools
+  - **USE THIS VERSION FOR INSTALLATION**
 
-- **Release**: `ProjectManager-v1.0-release.apk` (118 MB)
+- **❌ Release (Unsigned)**: `ProjectManager-v1.0-release-unsigned.apk` (118 MB)
+  - **NOT INSTALLABLE** - Requires manual signing
   - Optimized for production
   - Smaller size, better performance
+  - Must be signed before installation
 
 ---
 
@@ -167,8 +181,59 @@ cd project-manager-apk
 ```
 
 ### Output Locations
-- Debug: `app/build/outputs/apk/debug/ProjectManager-v1.0-debug.apk`
-- Release: `app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk`
+- Debug: `app/build/outputs/apk/debug/ProjectManager-v1.0-debug.apk` ✅ **Ready to install**
+- Release: `app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk` ❌ **Requires signing**
+
+---
+
+## 🔐 Signing the Release APK
+
+If you want to use the release version, you need to sign it first.
+
+### Option 1: Quick Sign with Debug Key (For Testing)
+
+```bash
+# Sign with debug keystore (auto-generated)
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+  -keystore ~/.android/debug.keystore \
+  -storepass android -keypass android \
+  app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk \
+  androiddebugkey
+
+# Align the APK
+zipalign -v 4 \
+  app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk \
+  ProjectManager-v1.0-release-signed.apk
+```
+
+### Option 2: Create Production Keystore (For Distribution)
+
+```bash
+# Generate a new keystore
+keytool -genkey -v -keystore my-release-key.keystore \
+  -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+
+# Sign the APK
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+  -keystore my-release-key.keystore \
+  app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk \
+  my-key-alias
+
+# Align the APK
+zipalign -v 4 \
+  app/build/outputs/apk/release/ProjectManager-v1.0-release-unsigned.apk \
+  ProjectManager-v1.0-release-signed.apk
+```
+
+### Option 3: Use Android Studio
+
+1. Go to **Build → Generate Signed Bundle / APK**
+2. Select **APK**
+3. Create or select a keystore
+4. Choose **release** build variant
+5. Click **Finish**
+
+**⚠️ For most users: Just use the DEBUG APK - it works perfectly for testing!**
 
 ---
 
